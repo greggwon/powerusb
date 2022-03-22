@@ -1,0 +1,6 @@
+hidapi/
+cmd/lib/
+powerusb
+tags
+*.o
+*.so
