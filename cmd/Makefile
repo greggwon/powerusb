@@ -1,4 +1,4 @@
-CXXFLAGS=-fPIC -Wall -g -c -I../libpwrusb -Llib/64bit `pkg-config libusb-1.0 --cflags` -Wno-format-security
+CXXFLAGS=-fPIC -Wall -g -c -I../libpwrusb -Llib/64bit `pkg-config libusb-1.0 --cflags` -Wno-format-security -std=gnu++11
 LDFLAGS=-Wall -L/usr/local/lib/ -Llib/64bit -g -Xlinker '-u libusb_init' -lhidapi-libusb -lhidapi-hidraw -ldl `pkg-config libusb-1.0 --libs` -lusb-1.0 -lhidapi-libusb -lpowerusb -lusb-1.0 -lpthread -u libusb_init  -lcurses -lhidapi-hidraw
 
 CMD=powerusb
