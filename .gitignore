@@ -1,3 +1,5 @@
+.checkudev
+.checkusb
 hidapi/
 cmd/lib/
 powerusb
