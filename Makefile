@@ -6,6 +6,8 @@
 #
 #
 #######################################################################################################
+
+LIBDIR=/usr/local/lib
 .PHONY: all
 all: cmd
 
@@ -28,11 +30,13 @@ cmd : hidapi libpwrusb
 
 .PHONY: libpwrusb
 libpwrusb : 
-	cd libpwrusb; make
+	cd libpwrusb; make install
+	# make sure library is visible
+	ldconfig -l $(LIBDIR)/libpowerusb.so
 
 .PHONY: hidapi
 hidapi: hidapi/CMakeCache.txt
-	cd hidapi;make install
+	cd hidapi;make install || (rm CMakeCache.txt ; cmake . && make install)
 
 hidapi/CMakeCache.txt: .checkusb .checkudev hidapi/.git
 	cd hidapi;cmake . 
@@ -44,4 +48,4 @@ hidapi/.git:
 	( dpkg -s libudev1 >/dev/null || apt-get install libudev1 libudev-dev ) && touch .checkudev
 
 .checkusb:
-	( dpkg -s libusb-1.0-0 >/dev/null || apt-get install libusb-1.0-0 ) && touch .checkusb
+	( dpkg -s libusb-1.0-0 >/dev/null || apt-get install libusb-1.0-0 libusb-1.0-0-dev ) && touch .checkusb
