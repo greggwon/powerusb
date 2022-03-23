@@ -4,13 +4,28 @@ ping1=8.8.8.8
 ping2=8.8.4.4
 pingIntv=5
 intv=300
+pingcnt=2
 resetFor=5
 fails=2
 waitRestart=10
+powerOffTime=10
 
 trap "powerusb -S;exit" 2 3
 
-set -- `getopt "W:R:F:i:p:P:w:"`
+opts=`getopt "c:O:W:R:F:i:p:P:w:" "${@}"`
+if [ "$?" -ne 0 ]; then
+	echo "usage: $0 [-W interval] [-R resetPeriod] [-F failCount] [-p ping1-address] [-P ping2-address] [-O offTime] [-i pingInterval] [-w wait-restart-count] [-c ping-cnt]" >&2
+	exit 2
+fi
+set -- $opts
+
+# set port 1 to default to on
+powerusb -p 1 -d -s on
+powerusb -p 1 -s on
+
+# set port 2 to default to on
+powerusb -p 2 -d -s on
+powerusb -p 2 -s on
 
 while [ "$#" -gt 1 ]
 do
@@ -18,11 +33,13 @@ do
 		-w) waitRestart=$2;shift;;
 		-p) ping1=$2;shift;;
 		-P) ping2=$2;shift;;
+		-O) powerOffTime=$2;shift;;
 		-i) pingIntv=$2;shift;;
+		-c) pingcnt=$2;shift;;
 		-W) intv=$2;shift;;
 		-R) resetFor=$2;shift;;
 		-F) fails=$2;shift;;
-		*) echo "usage: $0 [-W interval] [-R resetPeriod] [-F failCount]" >&2;exit 2
+		*) echo "usage: $0 [-W interval] [-R resetPeriod] [-F failCount] [-p ping1-address] [-P ping2-address] [-O offTime] [-i pingInterval] [-w wait-restart-count] [-c ping-cnt]" >&2;exit 2;;
 	esac
 	shift
 done
@@ -34,16 +51,27 @@ while :
 do
 	powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails}
 
-	ping -c 4 -i ${pingIntv} ${ping1} >/dev/null || ping -c 4 -i ${pingIntv} ${ping2} >/dev/null
+	if ping -c ${pingcnt} -i ${pingIntv} ${ping1} >/dev/null; then
+		:
+	else
+		powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails}
+		ping -c ${pingcnt} -i ${pingIntv} ${ping2} >/dev/null
+	fi
 	if [ "$?" -ne 0 ]; then
-		if [ "${waitRestart}" -eq 10 ]; then
+		if [ "${waitRestart}" -eq 10 -o "${waitRestart}" -eq 0 ]; then
+			powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
 			powerusb -p 2 -s off
-			sleep 5
+			sleep ${powerOffTime}
+			powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
 			powerusb -p 2 -s on
+			if [ "${waitRestart}" -eq 0 ]; then
+				waitRestart=10
+			fi
 		fi
-		((waitRestart = waitRestart - 1))
+		(((waitRestart=waitRestart-1)))
 	else
 		waitRestart=10
 	fi
+	powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
 	sleep `echo ${intv} / 3 | bc`
 done
