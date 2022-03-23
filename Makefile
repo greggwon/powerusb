@@ -14,6 +14,7 @@ clean:
 	rm -rf hidapi
 	cd libpwrusb; make clean
 	cd cmd;       make clean
+	rm -f .checkusb .checkudev
 
 .PHONY: install
 install: cmd
