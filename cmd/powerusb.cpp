@@ -22,6 +22,7 @@ void usage(char **argv) {
 	fprintf( stderr, "       %s -r [-D] <reset-for>\n", argv[0] );
 	fprintf( stderr, "       %s -w [-D]\n", argv[0] );
 	fprintf( stderr, "       %s -R watchDogResetInv [-L] [-D] [-W watchdogInv] [-F watchdogFailCount]\n", argv[0] );
+	fprintf( stderr, "       %s -S\n", argv[0] );
 }
 
 static bool verbose = false;
@@ -40,6 +41,7 @@ class ActionHandler {
 	int watchdogReset;
 	bool watchdogLoop;
 	bool setWatchDog;
+	bool stopWatchDog;
 	bool getModel;
 	bool getFirmware;
 	int toggleOn, toggleOff;
@@ -65,6 +67,7 @@ class ActionHandler {
 		verbose = false;
 		reset = 0;
 		watchdogReset = 5;
+		stopWatchDog = false;
 		setWatchDog = false;
 		watchdogLoop = false;
 	}
@@ -79,13 +82,14 @@ class ActionHandler {
 	{
 		LinuxPowerUSB &lp = *this->lp;
 		int c;
-		while( (c = getopt(argc, argv, "s:p:I:devwmfioDLO:r:R:W:F:T:t:")) != -1 ) {
+		while( (c = getopt(argc, argv, "s:p:I:devwmfioDLO:r:R:SW:F:T:t:")) != -1 ) {
 			debug("Processing argument: -%c", c );
 			switch( c ) {
 				case 'T': toggleOn = atoi(optarg); setupToggle = true; break;
 				case 't': toggleOff = atoi(optarg); setupToggle = true; break;
 				case 'F': watchdogFail = atoi(optarg); setWatchDog = true; break;
 				case 'W': watchdog = atoi(optarg); setWatchDog = true; break;
+				case 'S': stopWatchDog = true; break;
 				case 'R': watchdogReset = atoi(optarg); setWatchDog = true; break;
 				case 'D': debugging = true; break;
 				case 'L': watchdogLoop = true; break;
@@ -110,7 +114,7 @@ class ActionHandler {
 		PowerUSB::debugging = verbose;
 		debug("...Set verbose=%d", verbose);
 		if( windowing ) return 5;
-		if( input == 0 && output == 0 && port == 0 && !inputs && reset == 0 && !setWatchDog && !getFirmware && !getModel ) {
+		if( input == 0 && output == 0 && port == 0 && !inputs && reset == 0 && !setWatchDog && !stopWatchDog && !getFirmware && !getModel ) {
 			throw LinuxPowerUSBError( "missing port #: -p N required");
 		}
 
@@ -244,6 +248,12 @@ class ActionHandler {
 				debug("sleeping after heartbeat: %d", watchdog/2 );
 				sleep( watchdog/2 > 0 ? watchdog/2 : watchdog );
 			}
+		}
+		if( stopWatchDog ) {
+			debug("watchdog status: %d", lp.getWatchdogStatus());
+			debug("stopping watchdog...");
+			lp.stopWatchDog();
+			debug("stopped watchdog status: %d", lp.getWatchdogStatus());
 		}
 		return 0;
 	}
