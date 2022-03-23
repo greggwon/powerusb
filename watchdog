@@ -1,0 +1,46 @@
+#!/bin/bash
+
+ping1=8.8.8.8
+ping2=8.8.4.4
+pingIntv=5
+intv=300
+resetFor=5
+fails=2
+waitRestart=10
+
+trap "powerusb -S;exit" 0 1 2 3 15
+
+set -- `getopt "W:R:F:i:p:P:w:"`
+
+while [ "$#" -gt 1 ]
+do
+	case $1 in
+		-w) waitRestart=$2;shift;;
+		-p) ping1=$2;shift;;
+		-P) ping2=$2;shift;;
+		-i) pingIntv=$2;shift;;
+		-W) intv=$2;shift;;
+		-R) resetFor=$2;shift;;
+		-F) fails=$2;shift;;
+		*) echo "usage: $0 [-W interval] [-R resetPeriod] [-F failCount]" >&2;exit 2
+	esac
+	shift
+done
+
+while :
+do
+	powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails}
+
+	ping -c 4 -i ${pingIntv} ${ping1} >/dev/null || ping -c 4 -i ${pingIntv} ${ping2} >/dev/null
+	if [ "$?" -ne 0 ]; then
+		if [ "${waitRestart}" -eq 10 ]; then
+			powerusb -p 2 -s off
+			sleep 5
+			powerusb -p 2 -s on
+		fi
+		((waitRestart = waitRestart - 1))
+	else
+		waitRestart=10
+	fi
+	sleep `echo ${intv} / 3 | bc`
+done
