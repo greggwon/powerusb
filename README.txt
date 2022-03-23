@@ -4,9 +4,19 @@ This project is a rewrite and rework of the powerusb library and command line to
 
 There were numerous issues with the sourcecode structure and that I worked through to create a new version of both.
 
-----------
+BUILDING:
+Pull down this repo into an appropriate direcctory.  In order to build the powerusb library and the commandline tool, the USBHID libraries need to built and installed. The makefile will clone and build the http://github.com/libusb/hidapi.git repository when the 'all' target (the default) is built.  An admin priviledge level is required to install these needed libraries into system directories.  If you perform just "sudo make", you will get all the auxillary libraries installed, but the application will just be built in place, in the 'cmd' subdirectory.
 
-To install and use the library and/or command line application, pull down this repo and then use "sudo make install" to install the shared libraries and the application.  If you perform just "sudo make", you will get all the auxillary libraries installed, but the application will just be built.
+TESTING:
+You can use the following commands to see that everything is installed as required:
+
+	powerusb -p 1 -s on  # Turn on port #1
+	powerusb -p 1 -s off # Turn off port #1
+
+If you can see and/or hear the port#1 go on and then off with these two commands, then the rest of the application should work as needed.
+
+INSTALLTION:
+To install and use the library and/or command line application, use "sudo make install" to install the shared libraries and the application.
 
 DEPENDENCIES:
 There are several things that need to be installed to support the use of the HID interface, USB and the build out of the associated tools.  At a minumum, most linux environments where the GNU tools for C and C++ may already be installed, the build should just work.  But, to help that be more likely, the following APT targets on Ubuntu can be installed using the following command:
