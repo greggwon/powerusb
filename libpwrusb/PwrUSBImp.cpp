@@ -31,6 +31,10 @@ static void debug( T fmt, Args... args ) {
 bool PowerUSB::debugging;
 
 PowerUSB::PowerUSB() {
+	ResetData();
+}
+
+void PowerUSB::ResetData() {
 	CurrentDevice = -1;
 	AttachedState = FALSE;
 	AttachedDeviceCount = 0;
@@ -120,12 +124,7 @@ int PowerUSB::close()
 	}
 
 	// Clear out all saved state on close.
-	CurrentDevice = -1;
-	AttachedState = FALSE;
-	AttachedDeviceCount = 0;
-	memset( AttachedDeviceHandles, 0, sizeof(AttachedDeviceHandles) );
-	memset( OUTBuffer, 0, sizeof( OUTBuffer ) );
-	memset( INBuffer, 0, sizeof(INBuffer ) );
+	ResetData();
 
 	return 0;
 }
@@ -780,7 +779,7 @@ int PowerUSB::checkConnected( )
 					AttachedDeviceHandles[FoundIndex] = DeviceHandle;
 					AttachedDeviceCount = FoundIndex+1;
 				} else {
-					perror("hid_open_path");
+					//perror("hid_open_path");
 					debug( "Cannot open 0x%04x:0x%04x ('%s')\n",
 						cur_dev->vendor_id, cur_dev->product_id, cur_dev->path );
 				}

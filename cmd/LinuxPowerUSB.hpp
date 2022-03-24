@@ -80,9 +80,30 @@ public :
 
 	void setDebug(bool how) { debugging = how; PowerUSB::debugging = how; }
 
+	void Disconnect() {
+		pwrusb.close();
+	}
+
 	bool Setup() {
-		init();
-		return checkStatus();
+		bool st = false;
+		debug("Setup starting\n");
+		do {
+			init();
+			try {
+				st = checkStatus();
+			} catch( LinuxPowerUSBError &ex ) {
+				debug("status Error: %s\n", ex.what() );
+			}
+			debug("checkStatus is %d, power_wait=%s\n", st,
+				getenv("POWERUSB_WAIT") != NULL
+					? atoi(getenv("POWERUSB_WAIT")) ? "YES" : "NO"
+					: "NO" );
+			if( st == false && getenv("POWERUSB_WAIT") != NULL && atoi(getenv("POWERUSB_WAIT")) != 0 ) {
+				usleep(317000);
+			}
+		} while( st == false && getenv("POWERUSB_WAIT") != NULL && atoi(getenv("POWERUSB_WAIT")) != 0 );
+		debug("final checkStatus is %d\n", st );
+		return st;
 	}
 
 	void  init()
@@ -179,8 +200,11 @@ public :
 	int getVersion() {
 		return pwrusb.getFirmwareVersion();
 	}
-	std::string getModel() {
+	std::string getModelName() {
 		return pwrusb.getModelName();
+	}
+	int getModel() {
+		return pwrusb.getModel();
 	}
 	bool powerCycleIn( int seconds ) {
 		return pwrusb.powerCycle( seconds) > 0;

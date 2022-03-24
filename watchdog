@@ -10,26 +10,30 @@ fails=2
 waitRestart=10
 powerOffTime=10
 
-trap "powerusb -S;exit" 2 3
+VERBOSE= #-v
+trap "POWERUSB_WAIT=1 powerusb ${VERBOSE} -S;exit" 2 3
 
-opts=`getopt "c:O:W:R:F:i:p:P:w:" "${@}"`
+opts=`getopt "vc:O:W:R:F:i:p:P:w:" "${@}"`
 if [ "$?" -ne 0 ]; then
 	echo "usage: $0 [-W interval] [-R resetPeriod] [-F failCount] [-p ping1-address] [-P ping2-address] [-O offTime] [-i pingInterval] [-w wait-restart-count] [-c ping-cnt]" >&2
 	exit 2
 fi
 set -- $opts
 
+export POWERUSB_WAIT=1
+
 # set port 1 to default to on
-powerusb -p 1 -d -s on
-powerusb -p 1 -s on
+powerusb ${VERBOSE} -p 1 -d -s on
+powerusb ${VERBOSE} -p 1 -s on
 
 # set port 2 to default to on
-powerusb -p 2 -d -s on
-powerusb -p 2 -s on
+powerusb ${VERBOSE} -p 2 -d -s on
+powerusb ${VERBOSE} -p 2 -s on
 
 while [ "$#" -gt 1 ]
 do
 	case $1 in
+		-v) VERBOSE=-v;;
 		-w) waitRestart=$2;shift;;
 		-p) ping1=$2;shift;;
 		-P) ping2=$2;shift;;
@@ -45,25 +49,25 @@ do
 done
 
 # on system shutdown, pet the dog one last time before exit
-trap "powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails};exit" 1 15
+trap "powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails};exit" 1 15
 
 while :
 do
-	powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails}
+	powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails}
 
 	if ping -c ${pingcnt} -i ${pingIntv} ${ping1} >/dev/null; then
 		:
 	else
-		powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails}
+		powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails}
 		ping -c ${pingcnt} -i ${pingIntv} ${ping2} >/dev/null
 	fi
 	if [ "$?" -ne 0 ]; then
 		if [ "${waitRestart}" -eq 10 -o "${waitRestart}" -eq 0 ]; then
-			powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
-			powerusb -p 2 -s off
+			powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
+			powerusb ${VERBOSE} -p 2 -s off
 			sleep ${powerOffTime}
-			powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
-			powerusb -p 2 -s on
+			powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
+			powerusb ${VERBOSE} -p 2 -s on
 			if [ "${waitRestart}" -eq 0 ]; then
 				waitRestart=10
 			fi
@@ -72,6 +76,6 @@ do
 	else
 		waitRestart=10
 	fi
-	powerusb -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
+	powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
 	sleep `echo ${intv} / 3 | bc`
 done

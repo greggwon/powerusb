@@ -109,7 +109,7 @@ private:
 	void *sharedLibraryHandle;	// Pointer to Shared Library
 	bool onOffCheck( int port, int status );
 	int setCurrentDevice(int count);
-
+	void ResetData();
 public:
 	static bool debugging;
 	PowerUSB();

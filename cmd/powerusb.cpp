@@ -114,6 +114,8 @@ class ActionHandler {
 		PowerUSB::debugging = verbose;
 		debug("...Set verbose=%d", verbose);
 		if( windowing ) return 5;
+
+		lp.Setup();
 		if( input == 0 && output == 0 && port == 0 && !inputs && reset == 0 && !setWatchDog && !stopWatchDog && !getFirmware && !getModel ) {
 			throw LinuxPowerUSBError( "missing port #: -p N required");
 		}
@@ -127,7 +129,7 @@ class ActionHandler {
 			debug("Resetting PowerUSB Board");
 			lp.powerCycleIn(reset);
 			debug("Closing all ports");
-			lp.closeAll();
+			lp.Disconnect();
 			for( int i = 0; i < reset; ++i ) {
 				try {
 					debug("trying setup again to detect recovery");
@@ -149,7 +151,7 @@ class ActionHandler {
 			printf( "%d\n", vers );
 		}
 		if( getModel ) {
-			std::string mod = lp.getModel();
+			std::string mod = lp.getModelName();
 			printf( "%s\n", mod.c_str() );
 		}
 
@@ -264,20 +266,27 @@ static void moveDeviceBy( LinuxPowerUSB &p, int inc ) {
 	p.setCurrentDevice(cur+inc);
 	if( cur == p.getCurrentDevice() ) beep();
 }
+#define PLUG_ROW	1
+#define DEFAULT_ROW	2
+#define IO_ROW		3
+#define INPUT_ROW	4
+#define OUTPUT_ROW	5
+#define BOX_ROWS	7
+#define DEVICE_ROW	7
+#define STATE_ROW	8
+#define STATUS_ROW	9
+#define ERROR_ROW	14
 
 
 int main(int argc, char* argv[])
 {
-	LinuxPowerUSB p;
 	int ret = -1;
+	LinuxPowerUSB p;
 	try {
 		const int spc = 8;
 		const int plugs = 3;
 		const int cw =4;
-		debug("settingup debug");
-		p.setDebug(false);
 		debug("setup PowerUSB");
-		p.Setup();
 		debug("processing arguments");
 		ActionHandler ah(&p);
 		ret = ah.handleRequest( argc, argv);
@@ -291,35 +300,80 @@ int main(int argc, char* argv[])
 			//intrflush( stdscr, FALSE );
 			keypad( stdscr, TRUE );
 			nodelay( stdscr, TRUE );
-			win = subwin( stdscr, 6, std::max(spc * plugs + 7, numinput * cw + 8), 0, 0 );
-			move( 9, 0 );
+			win = subwin( stdscr, BOX_ROWS, std::max(spc * plugs + 7, numinput * cw + 8), 0, 0 );
+			move( STATUS_ROW, 0 );
 			printw("------------------------------------------------------------\n");
+			move( STATUS_ROW+1, 0 );
 			printw("SPC/CR=toggle, [1-%d]=Sel, q=quit, TAB/SHFT-TAB=switch ports\n", plugs);
+			move( STATUS_ROW+2, 0 );
+			printw("d=toggle default state\n");
 			int idx = 0;
-			//int portDirs[numinput] = {1,1,1,1,1,1,1};
-			//p.setIODirection(portDirs);
-			//p.setOutputState(portDirs);
 			while(!quit) {
-				move( 7, 0 );
+				debug("settingup debug");
+				p.setDebug(false);
+				while( true ) {
+					move(ERROR_ROW, 0);
+					try {
+						p.Disconnect();
+						p.Setup();
+						clrtoeol();
+						break;
+					} catch( LinuxPowerUSBError &ex ) {
+						p.Disconnect();
+						printw( "%s: %s", argv[0], ex.what() );
+						clrtoeol();
+						sleep(1);
+					}
+				}
+				move( DEVICE_ROW, 0 );
 				printw("Device #%d: %s: v%d.0", p.getCurrentDevice(),
-					p.getModel().c_str(), p.getVersion());
-				move( 1, 1 );
+					p.getModelName().c_str(), p.getVersion());
+				move( PLUG_ROW, 1 );
 				printw("Plg:");
+				move( DEFAULT_ROW, 1 );
+				printw("Def:");
 				for( int i = 0; i < plugs; ++i ) {
 					bool st = p.getPortState( i+1 );
-					move( 1, (i*spc)+7 );
-					if( i == idx ) {
-						standout();
+					move( PLUG_ROW, (i*spc)+7 );
+					if( p.getModel() == 3 &&  i == 2 ) {
+						st = p.getWatchdogStatus();
+						printw("WD=" );
+					} else {
+						if( i == idx ) {
+							standout();
+						}
+						printw("%d", i+1 );
+						if( i == idx ) {
+							standend();
+						}
+						addch('=');
 					}
-					printw("%d", i+1 );
-					if( i == idx ) {
-						standend();
-					}
-					addch('=');
 					wattron( stdscr, st ? A_BOLD : A_DIM );
 					printw("%s", st ? "on" : "off");
 					wattroff( stdscr, st ? A_BOLD : A_DIM );
 					clrtoeol();
+				
+
+					move( DEFAULT_ROW, (i*spc)+7 );
+					if( p.getModel() == 3 &&  i == 2 ) {
+						st = p.getWatchdogStatus();
+						printw("WD=" );
+					} else {
+						st = p.getPortDefaultState( i+1 );
+						if( i == idx ) {
+							standout();
+						}
+						printw("%d", i+1);
+						if( i == idx ) {
+							standend();
+						}
+						addch('=');
+					}
+					wattron( stdscr, st ? A_BOLD : A_DIM );
+					printw("%s", st ? "on" : "off");
+					wattroff( stdscr, st ? A_BOLD : A_DIM );
+					clrtoeol();
+
 				}
 				box( win, '|', '-');
 				int ch = getch();
@@ -328,22 +382,22 @@ int main(int argc, char* argv[])
 				int osts[numinput];
 				p.getInputStates( sts );
 				p.getOutputStates( osts );
-				move( 2, 1 );
+				move( IO_ROW, 1 );
 				printw("I/O:");
-				move( 3, 1 );
+				move( INPUT_ROW, 1 );
 				printw("Inp:");
-				move( 4, 1 );
+				move( OUTPUT_ROW, 1 );
 				printw("Out:");
 				for( int i = 0; i < numinput; ++i ) {
-					move( 2, 5+(i*cw)+2 );
+					move( IO_ROW, 5+(i*cw)+2 );
 					printw ("%d",i+plugs+1) ;
 
-					move( 3, 5+(i*cw)+1 );
+					move( INPUT_ROW, 5+(i*cw)+1 );
 					wattron( stdscr, sts[i] ? A_BOLD : A_DIM );
 					printw("%3s", sts[i] ? "on" : "off" );
 					wattroff( stdscr, sts[i] ? A_BOLD : A_DIM );
 
-					move( 4, 5+(i*cw)+1 );
+					move( OUTPUT_ROW, 5+(i*cw)+1 );
 					wattron( stdscr, osts[i] ? A_BOLD : A_DIM );
 					printw("%3s", osts[i] ? "on" : "off" );
 					wattroff( stdscr, osts[i] ? A_BOLD : A_DIM );
@@ -352,7 +406,7 @@ int main(int argc, char* argv[])
 				wrefresh(win);
 				//refresh();
 				if( ch != ERR ) {
-					move(8, 0);
+					move(STATE_ROW, 0);
 					clrtoeol();
 				}
 				switch( ch ) {
@@ -379,6 +433,7 @@ int main(int argc, char* argv[])
 						break;
 					case '+': moveDeviceBy(p,1); break;
 					case '-': moveDeviceBy(p,-1); break;
+					case 'd': p.setPortDefaultState( idx+1, !p.getPortDefaultState(idx+1)); break;
 					case '1':
 					case '2':
 					case '3':
@@ -389,15 +444,16 @@ int main(int argc, char* argv[])
 					    if( nidx < plugs+numinput ) idx = nidx;
 					}
 					default:
-						move(8, 0);
+						move(STATE_ROW, 0);
 						if( verbose ) printw("key=%d    ", ch );
 						break;
 				}
 				if( idx < plugs )
-					move( 1, (idx*spc)+7 );
+					move( PLUG_ROW, (idx*spc)+7 );
 				else if( idx < numinput+plugs && idx >= plugs )
-					move( 3, 5+(cw*(idx-plugs))+2 );
+					move( INPUT_ROW, 5+(cw*(idx-plugs))+2 );
 				refresh();
+				p.Disconnect();
 				usleep( 50000 );
 			}
 			endwin();
