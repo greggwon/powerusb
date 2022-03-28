@@ -356,8 +356,8 @@ int main(int argc, char* argv[])
 
 					move( DEFAULT_ROW, (i*spc)+7 );
 					if( p.getModel() == 3 &&  i == 2 ) {
-						st = p.getWatchdogStatus();
-						printw("WD=" );
+						//st = p.getWatchdogStatus();
+						//printw("WD=" );
 					} else {
 						st = p.getPortDefaultState( i+1 );
 						if( i == idx ) {
@@ -368,10 +368,10 @@ int main(int argc, char* argv[])
 							standend();
 						}
 						addch('=');
+						wattron( stdscr, st ? A_BOLD : A_DIM );
+						printw("%s", st ? "on" : "off");
+						wattroff( stdscr, st ? A_BOLD : A_DIM );
 					}
-					wattron( stdscr, st ? A_BOLD : A_DIM );
-					printw("%s", st ? "on" : "off");
-					wattroff( stdscr, st ? A_BOLD : A_DIM );
 					clrtoeol();
 
 				}

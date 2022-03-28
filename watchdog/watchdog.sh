@@ -11,7 +11,7 @@ waitRestart=10
 powerOffTime=10
 
 VERBOSE= #-v
-trap "POWERUSB_WAIT=1 powerusb ${VERBOSE} -S;exit" 2 3
+trap "POWERUSB_WAIT=1 powerusb ${VERBOSE} -S;exit 1" 2 3
 
 opts=`getopt "vc:O:W:R:F:i:p:P:w:" "${@}"`
 if [ "$?" -ne 0 ]; then
@@ -49,7 +49,7 @@ do
 done
 
 # on system shutdown, pet the dog one last time before exit
-trap "powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails};exit" 1 15
+trap "powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails};exit 0" 1 15
 
 while :
 do

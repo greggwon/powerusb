@@ -1,0 +1,14 @@
+[Unit]
+Description=PowerUSB Watchdog
+After=network.target
+StartLimitIntervalSec=15
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+User=wcadmin
+ExecStart=/usr/local/bin/watchdog
+
+[Install]
+WantedBy=multi-user.target

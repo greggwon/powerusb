@@ -1,0 +1,72 @@
+.TH powerusb.service 5 
+.SH NAME
+systemd [start|stop|restart] powerusb \- watchdog service for the
+.B PowerUSB
+.I USB controlled
+power strip.
+.SH SYNOPSIS
+watchdog.sh [-v]
+[-c ping-count]
+[-O secs off]
+[-W secs interval]
+[-R secs cycled]
+[-F failure count]
+[-i ping intv]
+[-p address1]
+[-P address2]
+[-w window-time count between port #2 resets]
+.SH DESCRIPTION
+This systemd service provides a watchdog service for using the 
+watchdog power strip port #3 as the primary power for a computer
+system running the powerusb service.  This service will periodically
+ping the primary (8.8.8.8) and secondary (8.8.4.4) DNS servers operated
+by Google, or the IP addresses/hosts specified by the arguments to the
+-p and -P arguments respectively.
+.SH OPTIONS
+.IP -v
+Verbose output from powerusb command shown
+.IP -c
+Count of pings sent
+.IP -O
+Time power will be off in watchdog event
+.IP -W
+Window/interval for watchdog timeout
+.IP -R
+Number of seconds power is off for port #2 comms fail signalling
+.IP -F
+Number of failures of window time before watchdog reset occurs
+.IP -i
+The interval between ping requests
+.IP -p
+Primary ping address
+.IP -P
+Secondary ping address
+.IP -w
+Number of window time intervals before comm fail check starts again
+.SH SIGNALS
+This script catch kill signals 2 and 3 and will disable the watchdog and stop.  It also catches signals 1 and 15, and will pet the watchdog
+before exiting, but leave the watchdog running.  This strategy allows command line operation and interaction/development vs production use where
+shutdowns, which typically use signal 15/SIGTERM to stop the service, should leave the watchdog running so that shutdown errors related to device
+close hanging, will not block the reboot.
+.SH EXIT STATUS
+The process will exit based on how it was terminated.  For signals 2 and 3, it exits with a 1 status.  For signals 1 and 15 it exits with a 0 status.
+.SH ENVIRONMENT
+This service is installed with systemd support, when avaiable.
+.SH FILES
+/usr/local/bin/watchdog - the service script
+.P
+/etc/systemd/system/powerusb.service - the service definition
+.SH VERSIONS
+This version is separate and incompatible with the PowerUSB released original Linux support.
+.SH EXAMPLE
+systemctl start powerusb - to start the watchdog service
+.P
+systemctl status powerusb - to see the current status of the watchdog service
+.PP
+.RE
+.SH AUTHORS
+.PP
+SeqTek LLC used the original distributed support for Linux to create this updated version.
+.SH SEE ALSO
+.B libusb-1.0.0(3),
+.B libhid(3)
