@@ -23,6 +23,7 @@ install: cmd
 	cd hidapi;    make install
 	cd libpwrusb; make install
 	cd cmd;       make install
+	cd watchdog;  make install
 
 .PHONY: cmd
 cmd : hidapi libpwrusb
