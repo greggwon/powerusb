@@ -32,7 +32,9 @@ $(LIB): $(OFILES)
 clean:
 	rm -f $(LIB) $(OFILES)
 
-install: $(LIB)
+install: $(LIBDIR)/$(LIB)
+
+$(LIBDIR)/$(LIB): $(LIB)
 	cp $(LIB) $(LIBDIR)/$(LIB)
 	mkdir -p $(INCLDIR)
 	chmod 775 $(INCLDIR)
