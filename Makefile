@@ -21,6 +21,7 @@ clean:
 
 .PHONY: install
 install: cmd
+	git submodule update --recursive --init
 	cd hidapi;    make install
 	cd libpwrusb; make install
 	cd cmd;       make install
@@ -47,11 +48,11 @@ tools: .tools
 	done && touch .tools
  
 .PHONY: cmd
-cmd : tools hidapi libpwrusb
+cmd: tools hidapi libpwrusb
 	cd cmd; make
 
 .PHONY: libpwrusb
-libpwrusb :  tools
+libpwrusb:  tools
 	cd libpwrusb; make install
 	# make sure library is visible
 	ldconfig -l $(LIBDIR)/libpowerusb.so
@@ -65,7 +66,7 @@ hidapi/CMakeCache.txt: .checkusb .checkudev hidapi/.git
 	cd hidapi;cmake . 
 
 hidapi/.git: 
-	git clone http://github.com/libusb/hidapi.git
+	git submodule update --recursive --init
 
 .checkudev:
 	( (dpkg -s libudev1 >/dev/null && dpkg -s libudev-dev >/dev/null) || apt-get install libudev1 libudev-dev ) && touch .checkudev
