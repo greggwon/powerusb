@@ -11,13 +11,14 @@ TOOLPKGS=libncurses6 libncurses-dev cmake pkg-config libudev1 libudev-dev libusb
 LIBDIR=/usr/local/lib
 .PHONY: all
 all: cmd
-	mkdir -p dist/lib dist/bin dist/man
-	cp cmd/powerusb.1 dist/man
-	cp cmd/powerusb dist/bin
-	cp libpwrusb/libpowerusb.so dist/lib
+	mkdir -p pwrusb/lib pwrusb/bin pwrusb/man
+	cp cmd/powerusb.1 pwrusb/man/powerusb.1
+	cp cmd/powerusb pwrusb/bin/powerusb
+	cp libpwrusb/libpowerusb.so pwrusb/lib/libpowerusb.so
+	cp install.sh pwrusb/install.sh
 
 dist: all
-	tar zcvf dist-"`date +%Y%m%d`".tgz dist
+	tar zcvf pwrusb-"`date +%Y%m%d`".tgz pwrusb
 
 .PHONY: clean
 clean:

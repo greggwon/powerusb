@@ -8,5 +8,5 @@ tags
 *.o
 *.so
 
-dist/
-dist*.tgz
+pwrusb/
+pwrusb*.tgz

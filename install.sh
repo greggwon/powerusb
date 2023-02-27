@@ -1,7 +1,7 @@
 #!/bin/bash
 
-path=${1:-/ur/local}
+path=${1:-/usr/local}
 set -x
-sudo cp dist/bin/powerusb ${path}/bin
-sudo cp dist/lib/libpowerusb.so ${path}/lib
-sudo cp dist/man/powerusb.1 ${path}/man/man1/powerusb.1
+sudo cp bin/powerusb ${path}/bin
+sudo cp lib/libpowerusb.so ${path}/lib
+sudo cp man/powerusb.1 ${path}/man/man1/powerusb.1
