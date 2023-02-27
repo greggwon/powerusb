@@ -16,6 +16,12 @@ trap "POWERUSB_WAIT=1 powerusb ${VERBOSE} -S;exit 1" 2 3
 opts=`getopt "vc:O:W:R:F:i:p:P:w:" "${@}"`
 if [ "$?" -ne 0 ]; then
 	echo "usage: $0 [-W interval] [-R resetPeriod] [-F failCount] [-p ping1-address] [-P ping2-address] [-O offTime] [-i pingInterval] [-w wait-restart-count] [-c ping-cnt]" >&2
+
+	echo "NOTE:" >&2
+	echo "	port 1: computer port" >&2
+	echo "	port 2: modem port" >&2
+	echo "	port 3: accessory port" >&2
+	echo "	port 4: always on, no control port" >&2
 	exit 2
 fi
 set -- $opts
@@ -23,12 +29,18 @@ set -- $opts
 export POWERUSB_WAIT=1
 
 # set port 1 to default to on
+# This is the computer port
 powerusb ${VERBOSE} -p 1 -d -s on
 powerusb ${VERBOSE} -p 1 -s on
 
 # set port 2 to default to on
+# This is the modem port
 powerusb ${VERBOSE} -p 2 -d -s on
 powerusb ${VERBOSE} -p 2 -s on
+
+# set port 3 to default to on
+powerusb ${VERBOSE} -p 3 -d -s on
+powerusb ${VERBOSE} -p 3 -s on
 
 while [ "$#" -gt 1 ]
 do
