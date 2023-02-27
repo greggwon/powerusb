@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 path=${1:-/usr/local}
 sudo cp bin/watchdog ${path}/bin/watchdog
 sudo mkdir -p ${path}/man/man5
