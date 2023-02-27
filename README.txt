@@ -2,10 +2,10 @@ PowerUSB - http://www.powerusb.com command line and library interface
 
 This project is a rewrite and rework of the powerusb library and command line tool example that the PowerUSB company makes available for use on linux based systems.
 
-There were numerous issues with the sourcecode structure and that I worked through to create a new version of both.
+There were numerous issues with the sourcecode structure which I worked through to create this new version.
 
 BUILDING:
-Pull down this repo into an appropriate direcctory.  In order to build the powerusb library and the commandline tool, the USBHID libraries need to built and installed. The makefile will clone and build the http://github.com/libusb/hidapi.git repository when the 'all' target (the default) is built.  An admin priviledge level is required to install these needed libraries into system directories.  If you perform just "sudo make", you will get all the auxillary libraries installed, but the application will just be built in place, in the 'cmd' subdirectory.
+Pull down this repo into an appropriate direcctory. In order to build the powerusb library and the commandline tool, the USBHID libraries need to built and installed. The makefile will clone and build the http://github.com/libusb/hidapi.git repository when the 'all' target (the default) is built.  An admin priviledge level is required to install these needed libraries into system directories.  If you perform just "sudo make", you will get all the auxillary libraries installed, but the application will just be built in place, in the 'cmd' subdirectory.
 
 TESTING:
 You can use the following commands to see that everything is installed as required:
