@@ -11,6 +11,13 @@ TOOLPKGS=libncurses6 libncurses-dev cmake pkg-config libudev1 libudev-dev libusb
 LIBDIR=/usr/local/lib
 .PHONY: all
 all: cmd
+	mkdir -p dist/lib dist/bin dist/man
+	cp cmd/powerusb.1 dist/man
+	cp cmd/powerusb dist/bin
+	cp libpwrusb/libpowerusb.so dist/lib
+
+dist: all
+	tar zcvf dist-"`date +%Y%m%d`".tgz dist
 
 .PHONY: clean
 clean:
@@ -21,7 +28,6 @@ clean:
 
 .PHONY: install
 install: cmd
-	git submodule update --recursive --init
 	cd hidapi;    make install
 	cd libpwrusb; make install
 	cd cmd;       make install
@@ -49,6 +55,7 @@ tools: .tools
  
 .PHONY: cmd
 cmd: tools hidapi libpwrusb
+	git submodule update --recursive --init
 	cd cmd; make
 
 .PHONY: libpwrusb

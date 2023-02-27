@@ -7,3 +7,6 @@ powerusb
 tags
 *.o
 *.so
+
+dist/
+dist*.tgz
