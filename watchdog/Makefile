@@ -8,6 +8,14 @@ all:
 	@echo "The install target will install watchdog.sh into /usr/local/bin"
 	@echo "and install watchdog.service for systemd to use."
 
+dist:
+	mkdir -p watchdog/bin watchdog/man watchdog/svc
+	cp powerusb.service.5 watchdog/man/powerusb.service.5
+	cp watchdog.service watchdog/svc/powerusb.service 
+	cp watchdog.sh watchdog/bin/watchdog
+	cp install.sh watchdog
+	tar cf watchdog-`date +%Y%m%d`.tgz watchdog
+
 install: /usr/local/bin/watchdog \
 	/etc/systemd/system/powerusb.service \
 	/usr/local/man/man5/powerusb.service.5
