@@ -31,3 +31,9 @@ until it is enabled.  To see the port mappings, use:
 	port 3: accessory port
 	port 4: always on, no control port
 
+
+Once the system is setup, use this command to enable the watchdog service to start watching for traffic failures
+and then power cycle port 2 to reboot the modem.  You can manipulate the internet routes or uncable your internet
+access from the board to test the watchdog.
+
+	systemctl enable powerusb
