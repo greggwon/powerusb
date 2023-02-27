@@ -1,7 +1,7 @@
 #!/bin/bash
 
-path=${1:-/usr/local}
 set -x
+path=${1:-/usr/local}
 
 # This should install all of the tooling and library dependencies needed for deployment and build
 sudo apt-get install libudev1 libudev-dev libusb-1.0-0 libusb-1.0-0-dev libhidapi-hidraw0 libhidapi-libusb0
