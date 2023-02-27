@@ -34,3 +34,6 @@ install: /usr/local/bin/watchdog \
 /etc/systemd/system/powerusb.service: watchdog.service
 	cp watchdog.service /etc/systemd/system/powerusb.service
 	systemctl daemon-reload
+
+clean:
+	rm -f watchdog-*.tgz

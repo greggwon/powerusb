@@ -17,11 +17,11 @@ opts=`getopt "vc:O:W:R:F:i:p:P:w:" "${@}"`
 if [ "$?" -ne 0 ]; then
 	echo "usage: $0 [-W interval] [-R resetPeriod] [-F failCount] [-p ping1-address] [-P ping2-address] [-O offTime] [-i pingInterval] [-w wait-restart-count] [-c ping-cnt]" >&2
 
-	echo "NOTE:" >&2
-	echo "	port 1: computer port" >&2
-	echo "	port 2: modem port" >&2
-	echo "	port 3: accessory port" >&2
-	echo "	port 4: always on, no control port" >&2
+	echo "`tput smso`NOTE:`tput rmso`" >&2
+	echo "	Port 1: computer port" >&2
+	echo "	Port 2: modem port" >&2
+	echo "	Port 3: accessory port" >&2
+	echo "	Port 4: always on, no control port" >&2
 	exit 2
 fi
 set -- $opts

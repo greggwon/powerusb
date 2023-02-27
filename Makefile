@@ -19,6 +19,13 @@ all: cmd
 
 dist: all
 	tar zcvf pwrusb-"`date +%Y%m%d`".tgz pwrusb
+	cd watchdog;make dist
+	mkdir -p dist/powerusb
+	cp pwrusb-"`date +%Y%m%d`".tgz dist/powerusb
+	cp watchdog/watchdog-"`date +%Y%m%d`".tgz dist/powerusb
+	cp DIST.md dist/powerusb/README.md
+	cd dist; tar cvf ../powerusb-"`date +%Y%m%d`".tgz powerusb
+
 
 .PHONY: clean
 clean:
@@ -26,6 +33,9 @@ clean:
 	cd libpwrusb; make clean
 	cd cmd;       make clean
 	rm -f .checkusb .checkudev
+	rm -f powerusb-*.tgz
+	rm -f pwrusb-*.tgz
+	cd watchdog;make clean
 
 .PHONY: install
 install: cmd
@@ -81,3 +91,5 @@ hidapi/.git:
 
 .checkusb:
 	( (dpkg -s libusb-1.0-0 >/dev/null && dpkg -s libusb-1.0-0-dev >/dev/null) || apt-get install libusb-1.0-0 libusb-1.0-0-dev ) && touch .checkusb
+
+clean:	
