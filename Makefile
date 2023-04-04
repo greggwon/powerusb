@@ -7,7 +7,25 @@
 #
 #######################################################################################################
 
-TOOLPKGS=libncurses6 libncurses-dev cmake pkg-config libudev1 libudev-dev libusb-1.0-0 libusb-1.0-0-dev
+TOOLPKGS=\
+	libncurses6 \
+	libncurses-dev \
+	cmake \
+	pkg-config \
+	libudev1 \
+	libudev-dev \
+	libusb-1.0-0 \
+	libusb-1.0-0-dev \
+	libhidapi-dev \
+	libhidapi-hidraw0 \
+	libhidapi-libusb0 \
+	gcc \
+	g++ \
+	make
+
+BUILDHID=hidapi
+BUILDHID=
+
 LIBDIR=/usr/local/lib
 .PHONY: all
 all: cmd
@@ -29,7 +47,7 @@ dist: all
 
 .PHONY: clean
 clean:
-	rm -rf hidapi
+	if [ -d "${BUILDHID}" ]; then rm -rf ${BUILDHID} ;fi
 	cd libpwrusb; make clean
 	cd cmd;       make clean
 	rm -f .checkusb .checkudev
@@ -39,10 +57,10 @@ clean:
 
 .PHONY: install
 install: cmd
-	cd hidapi;    make install
-	cd libpwrusb; make install
-	cd cmd;       make install
-	cd watchdog;  make install
+	if [ -d ${BUILDHID} ]; then cd ${BUILDHID}; make install;fi
+	cd libpwrusb;   make install
+	cd cmd;         make install
+	cd watchdog;    make install
 
 .PHONY: tools
 tools: .tools
@@ -65,7 +83,7 @@ tools: .tools
 	done && touch .tools
  
 .PHONY: cmd
-cmd: tools hidapi libpwrusb
+cmd: tools ${BUILDHID} libpwrusb
 	git submodule update --recursive --init
 	cd cmd; make
 
@@ -77,13 +95,13 @@ libpwrusb:  tools
 	ldconfig
 
 .PHONY: hidapi
-hidapi: hidapi/CMakeCache.txt tools
-	cd hidapi;make install || (rm CMakeCache.txt ; cmake . && make install)
+hidapi: ${BUILDHID}/CMakeCache.txt tools
+	cd ${BUILDHID};make install || (rm CMakeCache.txt ; cmake . && make install)
 
-hidapi/CMakeCache.txt: .checkusb .checkudev hidapi/.git
-	cd hidapi;cmake . 
+${BUILDHID}/CMakeCache.txt: .checkusb .checkudev ${BUILDHID}/.git
+	cd ${BUILDHID};cmake . 
 
-hidapi/.git: 
+${BUILDHID}/.git: 
 	git submodule update --recursive --init
 
 .checkudev:
