@@ -181,8 +181,10 @@ template<typename T, typename S>
 int PowerUSB::performUSBTaskWithResult( T makePacket, S results ) {
 	debug( "PerformUSBTask attached=%d\n", AttachedState );
 
-	if(!AttachedState)
+	if(!AttachedState) {
+		fprintf(stderr,"Not currently attached\n");
 		return -1;
+	}
 
 	int n = 0;
 	makePacket( OUTBuffer, n );
@@ -284,7 +286,9 @@ int PowerUSB::readPortState(int *port1, int *port2, int *port3)
 				*ops[i].port = results[0];
 				debug("found port=%d is %d ('%s')\n", i+1, results[0], results[0] ? "on" : "off" );
 			});
-			n++;
+			if( r != -1 ) {
+				n++;
+			}
 		}
 	}
 	return n;
