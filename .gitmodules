@@ -1,4 +1,0 @@
-[submodule "hidapi"]
-	path = hidapi
-	branch = master
-	url = https://github.com/libusb/hidapi.git
