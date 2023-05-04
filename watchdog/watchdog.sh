@@ -82,8 +82,9 @@ do
 	fi
 	if [ "$?" -ne 0 ]; then
 		if [ "${waitRestart}" -eq 10 -o "${waitRestart}" -eq 0 ]; then
-			powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
-			powerusb ${VERBOSE} -p ${wifiPort} -s off
+			# set the time for the collective time of sleeping to power-cycle the network and the watchdog interval
+			powerusb ${VERBOSE} -R $(expr ${resetFor} + ${powerOffTime}) -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
+			powerusb ${VERBOSE} -p 2 -s off
 			sleep ${powerOffTime}
 			powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
 			powerusb ${VERBOSE} -p ${wifiPort} -s on

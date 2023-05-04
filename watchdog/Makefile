@@ -16,6 +16,7 @@ dist:
 	cp install.sh watchdog
 	tar cf watchdog-`date +%Y%m%d`.tgz watchdog
 
+.PHONY: install
 install: /usr/local/bin/watchdog \
 	/etc/systemd/system/powerusb.service \
 	/usr/local/man/man5/powerusb.service.5

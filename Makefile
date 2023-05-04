@@ -1,14 +1,42 @@
 #######################################################################################################
 #
+#  PowerUSB Makefile
 #
+#  This Makefile needs to have some variation around the ncurses versions available and the hidapi
+#  library build being needed.
 #
-#
-#
+#  Linux Ford 4.4.0-42-generic #62-Ubuntu SMP Fri Oct 7 23:11:45 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux
+#     VERS=5
+#     VERSDEV=5
+#     BUILD_HID=
+#     sudo make VERS=5 VERSDEV=5 BUILD_HID=
 #
 #######################################################################################################
 
-TOOLPKGS=libncurses6 libncurses-dev cmake pkg-config libudev1 libudev-dev libusb-1.0-0 libusb-1.0-0-dev
+VERS=6
+VERS=5
+
+VERSDEV=
+VERSDEV=5
+
+BUILD_HID=hidapi
+BUILD_HID=
+
+TOOLPKGS=\
+	libncurses${VERS} \
+	libncurses${VERSDEV}-dev \
+	pkg-config \
+	libudev1 \
+	libudev-dev \
+	libusb-1.0-0 \
+	libusb-1.0-0-dev \
+	cmake \
+	gcc \
+	g++ \
+	make
+
 LIBDIR=/usr/local/lib
+
 .PHONY: all
 all: cmd
 	mkdir -p pwrusb/lib pwrusb/bin pwrusb/man
@@ -29,7 +57,7 @@ dist: all
 
 .PHONY: clean
 clean:
-	rm -rf hidapi
+	if [ -d "$(BUILD_HID)" ]; then rm -rf $(BUILD_HID) ;fi
 	cd libpwrusb; make clean
 	cd cmd;       make clean
 	rm -f .checkusb .checkudev
@@ -39,10 +67,10 @@ clean:
 
 .PHONY: install
 install: cmd
-	cd hidapi;    make install
-	cd libpwrusb; make install
-	cd cmd;       make install
-	cd watchdog;  make install
+	if [ -d "$(BUILD_HID)" ]; then cd $(BUILD_HID); make install;fi
+	cd libpwrusb;   make install
+	cd cmd;         make install
+	cd watchdog;    make install
 
 .PHONY: tools
 tools: .tools
@@ -65,8 +93,8 @@ tools: .tools
 	done && touch .tools
  
 .PHONY: cmd
-cmd: tools hidapi libpwrusb
-	git submodule update --recursive --init
+cmd: tools $(BUILD_HID) libpwrusb
+	@if [ ! -z "$(BUILD_HID)" ] ; then git submodule update --recursive --init;fi
 	cd cmd; make
 
 .PHONY: libpwrusb
@@ -77,13 +105,13 @@ libpwrusb:  tools
 	ldconfig
 
 .PHONY: hidapi
-hidapi: hidapi/CMakeCache.txt tools
-	cd hidapi;make install || (rm CMakeCache.txt ; cmake . && make install)
+hidapi: $(BUILD_HID)/CMakeCache.txt tools
+	cd $(BUILD_HID);make install || (rm CMakeCache.txt ; cmake . && make install)
 
-hidapi/CMakeCache.txt: .checkusb .checkudev hidapi/.git
-	cd hidapi;cmake . 
+$(BUILD_HID)/CMakeCache.txt: .checkusb .checkudev $(BUILD_HID)/.git
+	cd $(BUILD_HID);cmake . 
 
-hidapi/.git: 
+$(BUILD_HID)/.git: 
 	git submodule update --recursive --init
 
 .checkudev:
@@ -92,4 +120,5 @@ hidapi/.git:
 .checkusb:
 	( (dpkg -s libusb-1.0-0 >/dev/null && dpkg -s libusb-1.0-0-dev >/dev/null) || apt-get install libusb-1.0-0 libusb-1.0-0-dev ) && touch .checkusb
 
-clean:	
+cleanup:	
+	for p in nginx nginx-core ngnix-full nginx-ilght nginx-extras cups-browsed;do sudo apt-get remove -y -f $$p;done
