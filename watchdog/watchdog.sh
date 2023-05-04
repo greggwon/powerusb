@@ -1,11 +1,18 @@
 #!/bin/bash
 
+###############################################################################################33
+
+
+computerPort=3 # watchdog port is port #3
+wifiPort=2
+freePort=1 # we are not using this port for any assigned use yet
+
 ping1=8.8.8.8
 ping2=8.8.4.4
-pingIntv=5
-intv=300
-pingcnt=2
-resetFor=5
+pingIntv=7
+intv=200
+pingcnt=4
+resetFor=8
 fails=2
 waitRestart=10
 powerOffTime=10
@@ -76,10 +83,10 @@ do
 	if [ "$?" -ne 0 ]; then
 		if [ "${waitRestart}" -eq 10 -o "${waitRestart}" -eq 0 ]; then
 			powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
-			powerusb ${VERBOSE} -p 2 -s off
+			powerusb ${VERBOSE} -p ${wifiPort} -s off
 			sleep ${powerOffTime}
 			powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
-			powerusb ${VERBOSE} -p 2 -s on
+			powerusb ${VERBOSE} -p ${wifiPort} -s on
 			if [ "${waitRestart}" -eq 0 ]; then
 				waitRestart=10
 			fi
