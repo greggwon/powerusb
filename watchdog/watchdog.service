@@ -2,7 +2,6 @@
 Description=PowerUSB Watchdog
 Documentation=man:powerusb.service(5)
 After=network.target
-StartLimitIntervalSec=15
 
 [Service]
 Type=simple

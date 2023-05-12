@@ -9,9 +9,9 @@ freePort=1 # we are not using this port for any assigned use yet
 
 ping1=8.8.8.8
 ping2=8.8.4.4
-pingIntv=7
+pingIntv=5
 intv=200
-pingcnt=4
+pingcnt=3
 resetFor=8
 fails=2
 waitRestart=10
