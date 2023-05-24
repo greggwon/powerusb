@@ -60,7 +60,7 @@ clean:
 	if [ -d "$(BUILD_HID)" ]; then rm -rf $(BUILD_HID) ;fi
 	cd libpwrusb; make clean
 	cd cmd;       make clean
-	rm -f .checkusb .checkudev
+	rm -f .checkusb .checkudev .checkhid
 	rm -f powerusb-*.tgz
 	rm -f pwrusb-*.tgz
 	cd watchdog;make clean
@@ -93,7 +93,7 @@ tools: .tools
 	done && touch .tools
  
 .PHONY: cmd
-cmd: tools $(BUILD_HID) libpwrusb .checkusb .checkudev
+cmd: tools $(BUILD_HID) libpwrusb .checkusb .checkudev .checkhid
 	@if [ ! -z "$(BUILD_HID)" ] ; then git submodule update --recursive --init;fi
 	cd cmd; make
 
@@ -108,11 +108,14 @@ libpwrusb:  tools
 hidapi: $(BUILD_HID)/CMakeCache.txt tools
 	cd $(BUILD_HID);make install || (rm CMakeCache.txt ; cmake . && make install)
 
-$(BUILD_HID)/CMakeCache.txt: .checkusb .checkudev $(BUILD_HID)/.git
+$(BUILD_HID)/CMakeCache.txt: .checkusb .checkudev .checkhid $(BUILD_HID)/.git
 	cd $(BUILD_HID);cmake . 
 
 $(BUILD_HID)/.git: 
 	git submodule update --recursive --init
+
+.checkhid:
+	apt-get install -y libhidapi-hidraw0 libhidapi-libusb0 libhidapi-dev && touch .checkhid
 
 .checkudev:
 	( (dpkg -s libudev1 >/dev/null && dpkg -s libudev-dev >/dev/null) || apt-get install libudev1 libudev-dev ) && touch .checkudev
