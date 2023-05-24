@@ -93,7 +93,7 @@ tools: .tools
 	done && touch .tools
  
 .PHONY: cmd
-cmd: tools $(BUILD_HID) libpwrusb
+cmd: tools $(BUILD_HID) libpwrusb .checkusb .checkudev
 	@if [ ! -z "$(BUILD_HID)" ] ; then git submodule update --recursive --init;fi
 	cd cmd; make
 
