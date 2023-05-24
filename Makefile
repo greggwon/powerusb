@@ -1,5 +1,3 @@
-#######################################################################################################
-#
 #  PowerUSB Makefile
 #
 #  This Makefile needs to have some variation around the ncurses versions available and the hidapi
@@ -124,4 +122,4 @@ $(BUILD_HID)/.git:
 	( (dpkg -s libusb-1.0-0 >/dev/null && dpkg -s libusb-1.0-0-dev >/dev/null) || apt-get install libusb-1.0-0 libusb-1.0-0-dev ) && touch .checkusb
 
 cleanup:	
-	for p in nginx nginx-core ngnix-full nginx-ilght nginx-extras cups-browsed;do sudo apt-get remove -y -f $$p;done
+	for p in nginx-common nginx nginx-core ngnix-full nginx-light nginx-extras cups-browsed;do sudo apt-get remove -y -f $$p;done
