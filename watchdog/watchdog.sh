@@ -2,10 +2,9 @@
 
 ###############################################################################################33
 
-
-computerPort=3 # watchdog port is port #3
-wifiPort=2
-freePort=1 # we are not using this port for any assigned use yet
+freePort=1       # we are not using this port for any assigned use yet
+wifiPort=2       # wifi modem is on port 2
+computerPort=3   # watchdog port is port #3
 
 ping1=8.8.8.8
 ping2=8.8.4.4
