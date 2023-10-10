@@ -14,3 +14,4 @@ sudo cp svc/powerusb.service /etc/systemd/system/powerusb.service
 sudo systemctl daemon-reload
 sudo systemctl ${enable} powerusb
 sudo systemctl status powerusb
+sudo systemctl restart rsyslog

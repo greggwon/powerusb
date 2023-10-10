@@ -1,0 +1,1 @@
+:syslogtag, isequal, "watchdog:" /var/log/powerusb.log

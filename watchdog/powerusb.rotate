@@ -1,0 +1,8 @@
+/var/log/powerusb.log {
+        weekly
+        rotate 10
+        delaycompress
+        missingok
+        notifempty
+        create 644 syslog adm
+}

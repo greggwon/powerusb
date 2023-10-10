@@ -13,7 +13,8 @@ intv=200
 pingcnt=3
 resetFor=8
 fails=2
-waitRestart=10
+maxwait=10
+waitRestart=${maxwait}
 powerOffTime=10
 
 VERBOSE= #-v
@@ -44,6 +45,7 @@ powerusb ${VERBOSE} -p 1 -s on
 powerusb ${VERBOSE} -p 2 -d -s on
 powerusb ${VERBOSE} -p 2 -s on
 
+# On the watchdog powerusb this does nothing
 # set port 3 to default to on
 powerusb ${VERBOSE} -p 3 -d -s on
 powerusb ${VERBOSE} -p 3 -s on
@@ -69,32 +71,58 @@ done
 # on system shutdown, pet the dog one last time before exit
 trap "powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails};exit 0" 1 15
 
+logger -t powerusb -p local3.info "Watchdog starting up"
+
 while :
 do
+	# restart/pet the watchdog
 	powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails}
 
+	# Check that networking is working
 	if ping -c ${pingcnt} -i ${pingIntv} ${ping1} >/dev/null; then
 		:
 	else
+		# restart/pet the watchdog
 		powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails}
+		# try the ping one more time
 		ping -c ${pingcnt} -i ${pingIntv} ${ping2} >/dev/null
 	fi
+	err=$?
+	# Check if ping actually worked
 	if [ "$?" -ne 0 ]; then
-		if [ "${waitRestart}" -eq 10 -o "${waitRestart}" -eq 0 ]; then
+		logger -t powerusb -p local3.info "Network ping failed: $err: wait=$waitRestart of ${maxwait}"
+
+		# Ping failed if we've failed before, or time again, power cycle network port #2
+		if [ "${waitRestart}" -eq ${maxwait} -o "${waitRestart}" -eq 0 ]; then
 			# set the time for the collective time of sleeping to power-cycle the network and the watchdog interval
 			powerusb ${VERBOSE} -R $(expr ${resetFor} + ${powerOffTime}) -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
+			logger -t powerusb -p local3.info "Power Cycling port #2 for ${powerOffTime}"
+			# Turn off port #2
 			powerusb ${VERBOSE} -p 2 -s off
+			# keep it off for appropriate time
 			sleep ${powerOffTime}
+			# Touch watchdog again
 			powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
+			# Turn the port on again
 			powerusb ${VERBOSE} -p ${wifiPort} -s on
+			logger -t powerusb -p local3.info "Power back on port #2"
+
+			# Reset countdown to ${maxwait} times before we do this again
 			if [ "${waitRestart}" -eq 0 ]; then
-				waitRestart=10
+				waitRestart=${maxwait}
 			fi
 		fi
+		# decrement the counter by one so that we won't power cycle for waitRestart*intv
 		(((waitRestart=waitRestart-1)))
 	else
-		waitRestart=10
+		# reset to ${maxwait} so we will restart on next fail
+		waitRestart=${maxwait}
 	fi
+
+	# Touch the watchdog again
 	powerusb ${VERBOSE} -R ${resetFor} -W `echo ${intv} / ${fails} | bc` -F ${fails} && \
+
+	# wait for next interval. We divide by 3 because we want to try and touch
+	# it more often than the limit of the interval of ${intv}/ ${fails} which is ${invt} / 2
 	sleep `echo ${intv} / 3 | bc`
 done
