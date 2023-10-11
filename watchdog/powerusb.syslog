@@ -1,1 +1,1 @@
-:syslogtag, isequal, "watchdog:" /var/log/powerusb.log
+:syslogtag, isequal, "powerusb:" /var/log/powerusb.log
