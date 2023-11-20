@@ -14,9 +14,12 @@ DIRS= \
 	${BASEDIR}etc/rsyslog.d
 
 all:
-	@echo "The install target will install watchdog.sh into /usr/local/bin"
-	@echo "and install watchdog.service for systemd to use."
-
+	@echo "The 'install' target will install watchdog.sh into /usr/local/bin"
+	@echo "and install watchdog.service for systemd to use and requires sudo."
+	@echo ""
+	@echo "The 'dist' target will create a tar file named"
+	@echo "  watchdog-`date +%Y%m%d`.tgz"
+	@echo "which contains all the pieces from the watchdog service"
 dist:
 	mkdir -p watchdog/bin watchdog/man watchdog/svc
 	cp powerusb.service.5 watchdog/man/powerusb.service.5
@@ -24,6 +27,8 @@ dist:
 	cp watchdog.sh watchdog/bin/watchdog
 	cp install.sh watchdog
 	tar cf watchdog-`date +%Y%m%d`.tgz watchdog
+	@echo "`tput smso`NOTE: created output file:`tput rmso`"
+	@ls -ltra watchdog-`date +%Y%m%d`.tgz
 
 .PHONY: install
 install: ${DIRS} \
@@ -59,4 +64,4 @@ ${BASEDIR}etc/systemd/system/powerusb.service: watchdog.service
 	systemctl daemon-reload
 
 clean:
-	rm -f watchdog-*.tgz
+	rm -rf watchdog-*.tgz watchdog
