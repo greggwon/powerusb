@@ -8,6 +8,7 @@ Type=simple
 Restart=always
 RestartSec=10
 User=wcadmin
+Group=adm
 ExecStart=/usr/local/bin/watchdog
 
 [Install]
