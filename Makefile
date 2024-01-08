@@ -81,7 +81,7 @@ tools: .tools
 			dpkg -s $$j | egrep 'Version|Package|Status';\
 		else \
 			echo `tput smso`installing $$j`tput rmso`;\
-			if apt-get install $$j ; then \
+			if apt-get install -y $$j ; then \
 				:;\
 			else \
 				echo `tput smso` $$j cannot be installed `tput rmso`;\
@@ -116,10 +116,10 @@ $(BUILD_HID)/.git:
 	apt-get install -y libhidapi-hidraw0 libhidapi-libusb0 libhidapi-dev && touch .checkhid
 
 .checkudev:
-	( (dpkg -s libudev1 >/dev/null && dpkg -s libudev-dev >/dev/null) || apt-get install libudev1 libudev-dev ) && touch .checkudev
+	( (dpkg -s libudev1 >/dev/null && dpkg -s libudev-dev >/dev/null) || apt-get install -y libudev1 libudev-dev ) && touch .checkudev
 
 .checkusb:
-	( (dpkg -s libusb-1.0-0 >/dev/null && dpkg -s libusb-1.0-0-dev >/dev/null) || apt-get install libusb-1.0-0 libusb-1.0-0-dev ) && touch .checkusb
+	( (dpkg -s libusb-1.0-0 >/dev/null && dpkg -s libusb-1.0-0-dev >/dev/null) || apt-get install -y libusb-1.0-0 libusb-1.0-0-dev ) && touch .checkusb
 
 cleanup:	
 	@echo "Updating apt sources"
