@@ -1,2 +1,3 @@
-watchdog/
+service
+systemctl
 watchdog-*.tgz
