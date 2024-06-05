@@ -462,6 +462,7 @@ int main(int argc, char* argv[])
 		if( ret == 5 ) endwin();
 		p.error( "%s: %s\n", argv[0], ex.what() );
 		usage( argv );
+		return 1; // error to get exceptions, so exit non-zero
 	}
 	debug("Closing all...");
 	p.closeAll();
