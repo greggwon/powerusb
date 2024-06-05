@@ -37,7 +37,17 @@ if [ "$?" -ne 0 ]; then
 fi
 set -- $opts
 
-export POWERUSB_WAIT=1
+export POWERUSB_WAIT=0
+
+if powerusb -p 1 >/dev/null 2>&1; then
+	:
+	export POWERUSB_WAIT=1
+else
+	echo "Watchdog: powerusb cannot find powerusb strip connected"" >&2
+	logger -t powerusb -p local3.info "Watchdog: powerusb cannot find powerusb strip connected""
+	exit 1
+fi
+	
 
 # set port 1 to default to on
 # This is the computer port
