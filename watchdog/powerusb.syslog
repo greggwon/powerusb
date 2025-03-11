@@ -1,1 +1,0 @@
-:syslogtag, isequal, "powerusb:" /var/log/powerusb.log

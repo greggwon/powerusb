@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# IP address of power strip by default
+IP="192.168.55.10"
+
+# seconds timeout
+to=3  
+
+if [ "$#" -eq 0 ]; then
+	echo "usage: $0 [-a IP] [-rd] [-s on/off] [-t timeout] [-p port]" >&2
+	exit 2
+fi
+
+onoff=
+port=
+qret=
+
+while getopts 'rp:s:dt:a:' f;do
+	case $f in
+		r) onoff=3; port=1;;
+		a) IP="${OPTARG}";;
+		s) if [ "${OPTARG}" = "on" ]; then
+			onoff=1
+			qret=3
+		   elif [ "${OPTARG}" = "off" ]; then
+			onoff=2
+			qret=2
+		   fi
+		   ;;
+		t) to=${OPTARG};;
+		d) exit 0;; 
+		p) port=$2 ; if [ "$onoff" = "" ]; then onoff=1; qret=3;fi;;
+		*) exit 2;;
+	esac
+done
+
+echo -n "Connecting to ${IP}..." >&2
+ret=$(curl --connect-timeout "${to}" -s -g -u test:test --basic "http://${IP}/out_ctrl.csp?port=${port}&ctrl_kind=${onoff}")
+e=$?
+echo >&2
+
+if echo $ret | grep '"Ret":'"${qret}" >/dev/null; then
+	exit 0
+else
+	if [ "${e}" = 28 ]; then
+		echo "$0: Cannot connect to power strip" >&2
+		exit $e
+	else
+		echo "$0: Request failed: ${ret}" >&2
+		exit 1
+	fi
+fi
